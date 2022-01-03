@@ -1,8 +1,10 @@
 package com.havish.controller;
 
 
+import com.havish.dao.DatabaseConnection;
 import com.havish.modal.Representative;
 
+import java.sql.DriverManager;
 import java.util.Scanner;
 
 public class PageController {
@@ -57,6 +59,7 @@ public class PageController {
                 verification();
             }
         }else if(loginOption==3){
+            DatabaseConnection.closeCon();
             System.exit(0);
         }else{
             System.out.println("Invalid Option.. \nPlease Select Correct option......");

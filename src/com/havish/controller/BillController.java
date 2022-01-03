@@ -214,11 +214,16 @@ public class BillController {
         LocalDate from=LocalDate.parse(sc.next());
         System.out.println("Enter the Ending Date(YYYY-MM-DD)");
         LocalDate to=LocalDate.parse(sc.next());
-        try {
-            SuperMarketDAO.getInstance().viewSomePeriodBill(from,to);
-        }catch (SQLException e){
-            System.out.println(e);
+        if(to.isBefore(from)){
+            try {
+                SuperMarketDAO.getInstance().viewSomePeriodBill(from,to);
+            }catch (SQLException e){
+                System.out.println(e);
+            }
+        }else {
+            System.out.println("Please Enter valid Period");
         }
+
     }
 
 

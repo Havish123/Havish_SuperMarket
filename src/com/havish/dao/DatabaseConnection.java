@@ -18,4 +18,11 @@ public class DatabaseConnection {
     public static Connection getConnection(){
         return con;
     }
+    public static void closeCon(){
+        try{
+            con.close();
+        }catch (SQLException e){
+            System.out.println(e);
+        }
+    }
 }
