@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ModalController {
     private static ModalController instance;
@@ -93,6 +94,18 @@ public class ModalController {
             }
         }
         return dealerMap;
+    }
+    public Map<Integer,List<Customer_Purchase>> getCustPurchaseMap(){
+        if(customer_purchaseMap==null){
+            Map<Integer,BillDetails> billMap=getBillDetailsMap();
+            Set<Integer> keys=billMap.keySet();
+            for (Integer key :
+                    keys) {
+                List<Customer_Purchase> customer_purchases=SuperMarketDAO.getInstance().getCustomerPurchase(key);
+                customer_purchaseMap.put(key,customer_purchases);
+            }
+        }
+        return customer_purchaseMap;
     }
 
     //Add Data into Map

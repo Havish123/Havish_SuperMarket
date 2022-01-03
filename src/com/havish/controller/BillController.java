@@ -162,4 +162,34 @@ public class BillController {
         System.out.println();
     }
 
+    //Print Particular Bill
+    public void viewParticularBill(){
+        System.out.println("Enter the Bill Id");
+        int bill_id=sc.nextInt();
+        if(ModalController.getInstance().getBillDetailsMap().containsKey(bill_id)){
+            BillDetails billDetail=ModalController.getInstance().getBillDetailsMap().get(bill_id);
+            List<Customer_Purchase> customer_purchases=ModalController.getInstance().getCustPurchaseMap().get(bill_id);
+            String customer_name=ModalController.getInstance().getCustomerMap().get(billDetail.getCust_id()).getName();
+            System.out.println("_______Super Market_______");
+            System.out.println("Bill_id:"+billDetail.getBill_id());
+            System.out.println("Customer Name:"+customer_name);
+            System.out.println(String.format("%30s %25s %10s %25s %10s", "Item", "|", "Qty", "|", "Price($)"));
+            for (Customer_Purchase c :
+                    customer_purchases) {
+                System.out.println(String.format("%30s %25s %10d %25s %10.2f", c.getStock_name(), "|", c.getQuantity(), "|", c.getTotal_amount()));
+            }
+
+            System.out.println("Discount:"+(int)billDetail.getDiscount()+"%");
+            float discountAmount=billDetail.getTot_amount()*(billDetail.getDiscount()/100);
+            System.out.println("Discount Amount:"+discountAmount);
+            System.out.println("Total Amount:"+billDetail.getTot_amount());
+            System.out.println();
+        }else {
+            System.out.println("Invalid Bill ID......");
+        }
+
+    }
+
+
+
 }

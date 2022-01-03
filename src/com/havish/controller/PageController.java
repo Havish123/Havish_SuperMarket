@@ -165,6 +165,7 @@ public class PageController {
                 showParticularOption();
                 break;
             case 3:
+                BillController.getInstance().viewParticularBill();
                 showParticularOption();
                 break;
             case 4:

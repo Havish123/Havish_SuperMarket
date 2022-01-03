@@ -640,6 +640,7 @@ public class SuperMarketDAO {
     //Get Low Available Stocks
     public void getLowAvailableStocks() throws SQLException{
         String sql="SELECT p."+DBData.Stocks.ID+",p."+DBData.Stocks.NAME+",p."+DBData.Stocks.AVAILABLE+" FROM "+DBData.Stocks.STOCKTABLE+" as p WHERE p."+DBData.Stocks.AVAILABLE+"<20;";
+
         try{
             instantiateStmt();
             ResultSet rs=stmt.executeQuery(sql);
@@ -653,4 +654,7 @@ public class SuperMarketDAO {
             }
         }
     }
+
+    //View Particular Bill Details
+
 }
