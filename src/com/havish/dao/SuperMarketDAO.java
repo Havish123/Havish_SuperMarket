@@ -323,9 +323,11 @@ public class SuperMarketDAO {
             String SELECT="SELECT * FROM "+DBData.Representative.REPTABLE+" WHERE "+DBData.Representative.ID+"="+id+";";
             instantiateStmt();
             ResultSet rs=stmt.executeQuery(SELECT);
-            rs.next();
-            rep=new Representative(rs.getInt(DBData.Representative.ID),rs.getString(DBData.Representative.NAME),rs.getString(DBData.Representative.PASSCODE),rs.getString(DBData.Representative.REP_TYPE));
+            if(!rs.next()){
 
+            }else {
+                rep=new Representative(rs.getInt(DBData.Representative.ID),rs.getString(DBData.Representative.NAME),rs.getString(DBData.Representative.PASSCODE),rs.getString(DBData.Representative.REP_TYPE));
+            }
         }finally {
             if(stmt!=null){
                 stmt.close();
@@ -441,6 +443,22 @@ public class SuperMarketDAO {
         return 0;
     }
 
+    //Update Representative Sales
+    public int updateSalesRep(int rep_id,int sales,float amount) throws  SQLException{
+        String sql="UPDATE "+DBData.Representative.REPTABLE+" SET "+DBData.Representative.TOT_SALES+"="+DBData.Representative.TOT_SALES+"+?,"+DBData.Representative.TOT_AMOUNT+"="+DBData.Representative.TOT_AMOUNT+"+? WHERE "+DBData.Representative.ID+"=?;";
+        try{
+            instantiatePstmt(sql);
+            pstmt.setInt(1,sales);
+            pstmt.setFloat(2,amount);
+            pstmt.setInt(3,rep_id);
+            pstmt.executeUpdate();
+        }finally {
+            if(pstmt!=null)
+                pstmt.close();
+        }
+        return 0;
+    }
+
     //Get all Dealer Details
     public Map<Integer, Dealer> getAllDealer() throws SQLException{
         Map<Integer,Dealer> dealerMap=new HashMap<>();
@@ -483,6 +501,8 @@ public class SuperMarketDAO {
                 rep.setRep_type(rs.getString(DBData.Representative.REP_TYPE));
                 rep.setPasscode(rs.getString(DBData.Representative.PASSCODE));
                 rep.setAge(rs.getInt(DBData.Representative.AGE));
+                rep.setTotal_sales(rs.getInt(DBData.Representative.TOT_SALES));
+                rep.setTotal_amount(rs.getFloat(DBData.Representative.TOT_AMOUNT));
                 representativeMap.put(rep_id,rep);
                 //System.out.println(representativeMap);
 
@@ -604,15 +624,20 @@ public class SuperMarketDAO {
         try{
             instantiateStmt();
             ResultSet rs=stmt.executeQuery(sql);
-            while(rs.next()){
-                int id=rs.getInt(DBData.Stock_Purchase_Bill.ID);
-                Stock_Purchase_Bill bill=new Stock_Purchase_Bill();
-                bill.setPurchase_id(id);
-                bill.setDealer_id(rs.getInt(DBData.Stock_Purchase_Bill.DEALER_ID));
-                bill.setPurchase_date(rs.getString(DBData.Stock_Purchase_Bill.DATE));
-                bill.setTotal_amount(rs.getFloat(DBData.Stock_Purchase_Bill.AMOUNT));
-                billMap.put(id,bill);
+            if(!rs.next()){
+                System.out.println("No purchase Bill Available");
+            }else{
+                do{
+                    int id=rs.getInt(DBData.Stock_Purchase_Bill.ID);
+                    Stock_Purchase_Bill bill=new Stock_Purchase_Bill();
+                    bill.setPurchase_id(id);
+                    bill.setDealer_id(rs.getInt(DBData.Stock_Purchase_Bill.DEALER_ID));
+                    bill.setPurchase_date(rs.getString(DBData.Stock_Purchase_Bill.DATE));
+                    bill.setTotal_amount(rs.getFloat(DBData.Stock_Purchase_Bill.AMOUNT));
+                    billMap.put(id,bill);
+                }while(rs.next());
             }
+
         }finally {
             if(stmt!=null)
                 stmt.close();
@@ -627,10 +652,15 @@ public class SuperMarketDAO {
             System.out.println(sql);
             instantiateStmt();
             ResultSet rs=stmt.executeQuery(sql);
-            System.out.println(String.format("%15s %10s %10s %10s %20s", "ID", "|", "Name", "|", "Total Amount"));
-            while (rs.next()){
-                System.out.println(String.format("%15d %10s %-10s %10s %-20s", rs.getInt(DBData.Customer.ID), "|", rs.getString(DBData.Customer.NAME), "|", rs.getFloat("Total")));
+            if(!rs.next()){
+                System.out.println("No data Available....");
+            }else {
+                System.out.println(String.format("%15s %10s %10s %10s %20s", "ID", "|", "Name", "|", "Total Amount"));
+                do{
+                    System.out.println(String.format("%15d %10s %-10s %10s %-20s", rs.getInt(DBData.Customer.ID), "|", rs.getString(DBData.Customer.NAME), "|", rs.getFloat("Total")));
+                }while (rs.next());
             }
+
         }finally {
             if(stmt!=null)
                 stmt.close();
@@ -644,9 +674,13 @@ public class SuperMarketDAO {
         try{
             instantiateStmt();
             ResultSet rs=stmt.executeQuery(sql);
-            System.out.println(String.format("%15s %10s %10s %10s %20s", "ID", "|", "Name", "|", "Available Stock "));
-            while (rs.next()){
-                System.out.println(String.format("%15d %10s %-10s %10s %-20s", rs.getInt(DBData.Stocks.ID), "|", rs.getString(DBData.Stocks.NAME), "|", rs.getInt(DBData.Stocks.AVAILABLE)));
+            if(!rs.next()){
+                System.out.println("No data Available");
+            }else{
+                System.out.println(String.format("%15s %10s %10s %10s %20s", "ID", "|", "Name", "|", "Available Stock "));
+                do{
+                    System.out.println(String.format("%15d %10s %-10s %10s %-20s", rs.getInt(DBData.Stocks.ID), "|", rs.getString(DBData.Stocks.NAME), "|", rs.getInt(DBData.Stocks.AVAILABLE)));
+                }while (rs.next());
             }
         }finally {
             if(stmt!=null){
@@ -655,6 +689,89 @@ public class SuperMarketDAO {
         }
     }
 
-    //View Particular Bill Details
+    //View Today Bill Details
+    public void getTodayBills() throws SQLException{
+        String sql="SELECT * FROM "+DBData.BillDetails.BillTABLE+" WHERE "+DBData.BillDetails.DATE+"=?";
+        try{
+            instantiatePstmt(sql);
+            String date=LocalDate.now().toString();
+            pstmt.setString(1,date);
+            ResultSet rs=pstmt.executeQuery();
+            if(!rs.next()){
+                System.out.println("No Bills Availabe Today.........");
+            }else {
+                System.out.println(String.format("%8s %10s %15s %10s %10s %10s %10s %10s %18s %10s %8s ", "ID", "|", "Customer ID","|", "Rep_id", "|", "Bill Date","|","Amount","|","Discount(%)"));
+                do{
+                    System.out.println(String.format("%8d %10s %15d %10s %10d %10s %10s %10s %18.2f %10s %8d ", rs.getInt(DBData.BillDetails.ID), "|", rs.getInt(DBData.BillDetails.CUST_ID), "|", rs.getInt(DBData.BillDetails.REP_ID), "|",rs.getString(DBData.BillDetails.DATE),"|",rs.getFloat(DBData.BillDetails.TOT_AMOUNT),"|",rs.getInt(DBData.BillDetails.DISCOUNT)));
+                }while (rs.next());
+            }
 
+        }finally {
+            if(pstmt!=null)
+                pstmt.close();
+        }
+    }
+
+    //View Today Purchase
+    public void getTodayPurchase() throws SQLException{
+        String sql="SELECT * FROM "+DBData.Stock_Purchase_Bill.STOCK_PURCHASE_TABLE+" WHERE "+DBData.Stock_Purchase_Bill.DATE+"=?";
+        try{
+            instantiatePstmt(sql);
+            String date=LocalDate.now().toString();
+            pstmt.setString(1,date);
+            ResultSet rs=pstmt.executeQuery();
+            if(!rs.next()){
+                System.out.println("No Purchase Bills Availabe Today.........");
+            }else {
+                do{
+                    System.out.println(String.format("%8s %10s %15s %10s %10s %10s %10s", "ID", "|", "Dealer ID","|", "Purchase_date", "|", "Amount"));
+                    System.out.println(String.format("%8d %10s %15d %10s %10d %10s %10.2f ", rs.getInt(DBData.Stock_Purchase_Bill.ID), "|", rs.getInt(DBData.Stock_Purchase_Bill.DEALER_ID), "|", rs.getString(DBData.Stock_Purchase_Bill.DATE), "|",rs.getString(DBData.Stock_Purchase_Bill.AMOUNT)));
+                }while (rs.next());
+            }
+
+        }finally {
+            if(pstmt!=null)
+                pstmt.close();
+        }
+    }
+
+    //View Top Sales Stocks
+    public void viewTopSalesStocks() throws SQLException{
+        String sql="SELECT * FROM "+DBData.Stocks.STOCKTABLE+" ORDER BY "+DBData.Stocks.SALES+" DESC LIMIT 5";
+        try{
+            instantiateStmt();
+            ResultSet rs=stmt.executeQuery(sql);
+            if(!rs.next()){
+                System.out.println("No Stocks available");
+            }else{
+                System.out.println(String.format("%8s %10s %28s %10s %10s %10s %18s %10s %14s %10s %8s ", "ID", "|", "Name", "|", "PRICE","|","DATE","|","SALES","|","Available"));
+                do{
+                    System.out.println(String.format("%8d %10s %28s %10s %10.2f %10s %18s %10s %14d %10s %8d ",rs.getInt(DBData.Stocks.ID), "|", rs.getString(DBData.Stocks.NAME), "|", rs.getFloat(DBData.Stocks.PRICE),"|",rs.getString(DBData.Stocks.DATE),"|",rs.getInt(DBData.Stocks.SALES),"|",rs.getInt(DBData.Stocks.AVAILABLE)));
+                }while (rs.next());
+            }
+        }finally {
+            if(stmt!=null)
+                stmt.close();
+        }
+    }
+
+    //View Particular Period Bills
+    public void viewSomePeriodBill(LocalDate from ,LocalDate to) throws SQLException{
+        String sql="SELECT * FROM "+DBData.BillDetails.BillTABLE+" WHERE "+DBData.BillDetails.DATE+">='"+from+"' AND "+DBData.BillDetails.DATE+"<='"+to+"';";
+        try{
+            instantiateStmt();
+            ResultSet rs=stmt.executeQuery(sql);
+            if(!rs.next()){
+                System.out.println("No Bill Details Availabe");
+            }else{
+                System.out.println(String.format("%8s %10s %15s %10s %10s %10s %10s %10s %18s %10s %8s ", "ID", "|", "Customer ID","|", "Rep_id", "|", "Bill Date","|","Amount","|","Discount(%)"));
+                do{
+                    System.out.println(String.format("%8d %10s %15d %10s %10d %10s %10s %10s %18.2f %10s %8d ", rs.getInt(DBData.BillDetails.ID), "|", rs.getInt(DBData.BillDetails.CUST_ID), "|", rs.getInt(DBData.BillDetails.REP_ID), "|",rs.getString(DBData.BillDetails.DATE),"|",rs.getFloat(DBData.BillDetails.TOT_AMOUNT),"|",rs.getInt(DBData.BillDetails.DISCOUNT)));
+                }while (rs.next());
+            }
+        }finally {
+            if(stmt!=null)
+                stmt.close();
+        }
+    }
 }

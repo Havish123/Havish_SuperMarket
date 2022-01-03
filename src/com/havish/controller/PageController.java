@@ -18,7 +18,12 @@ public class PageController {
         System.out.println("1.Admin\n2.Representative\n3.Exit");
         System.out.println("\nEnter your option");
         loginOption=sc.nextInt();
-
+    }
+    public static void home(){
+        loginPage();
+        verification();
+        showOption();
+        doOption();
     }
     public static void login(){
         showOption();
@@ -77,6 +82,7 @@ public class PageController {
         }
     }
 
+    //Do the selected option
     public static void doOption() {
         if(isAdmin){
             switch (choice){
@@ -109,11 +115,11 @@ public class PageController {
                     login();
                     break;
                 case 8:
-                    showParticularOption();
+                    new PageController().showParticularOption();
                     break;
                 case 9:
                     isAdmin=false;
-                    loginPage();
+                    home();
                     break;
                 default:
                     System.out.println("Invalid Option....\nPlease Enter Correct Option....");
@@ -144,18 +150,20 @@ public class PageController {
                     break;
                 case 6:
                     isRep=false;
-                    loginPage();
+                    home();
                     break;
             }
         }
     }
+
+
     //Show Individual Data Option
-    public static void showParticularOption(){
+    public void showParticularOption(){
         System.out.println("Select Your Option\n1.View Top 5 Customers\n2.View low available Stocks" +
                 "\n3.View Particular Bill Details\n4.View Today Bills\n5.View Today Purchase" +
                 "\n6.View Top Sale Stocks\n7.View Particular Bills for some period\n8.Exit");
-        int choice=sc.nextInt();
-        switch (choice){
+        int ch1=sc.nextInt();
+        switch (ch1){
             case 1:
                 CustomerController.getInstance().getTopList();
                 showParticularOption();
@@ -169,15 +177,19 @@ public class PageController {
                 showParticularOption();
                 break;
             case 4:
+                BillController.getInstance().viewTodayBills();
                 showParticularOption();
                 break;
             case 5:
+                PurchaseController.getInstance().viewTodayPurchase();
                 showParticularOption();
                 break;
             case 6:
+                StockController.getInstance().viewTopStocks();
                 showParticularOption();
                 break;
             case 7:
+                BillController.getInstance().particularPeriodBills();
                 showParticularOption();
                 break;
             case 8:

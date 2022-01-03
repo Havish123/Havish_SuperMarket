@@ -4,6 +4,7 @@ import com.havish.dao.SuperMarketDAO;
 import com.havish.modal.*;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.*;
 
 public class BillController {
@@ -29,6 +30,7 @@ public class BillController {
         Map<Integer, Customer> customerMap=ModalController.getInstance().getCustomerMap();
         Set<Integer> keys=stockMap.keySet();
         List<Sales> salesList=new ArrayList<>();
+        int salecount=0;
         boolean flag=true;
         boolean exit=false;
         BillDetails billDetail=new BillDetails();
@@ -59,6 +61,7 @@ public class BillController {
                         }
                         System.out.println("Enter the quantity");
                         int quantity=sc.nextInt();
+                        salecount+=quantity;
                         sales.setQuantity(quantity);
                         sales.setStock_name(stock.getStockName());
                         tot_amount=tot_amount+stock.getStockPrice()*quantity;
@@ -83,67 +86,72 @@ public class BillController {
 
         }
         if(exit){
-            PageController.login();
-        }
+            PageController.home();
+        }else {
+            //Get Customer ID
+            Set<Integer> customerKeys=customerMap.keySet();
 
-        //Get Customer ID
-        Set<Integer> customerKeys=customerMap.keySet();
-
-        if(!customerKeys.isEmpty()){
-            System.out.println("Enter the Customer Id:");
-            int cust_id=sc.nextInt();
-            if(customerMap.containsKey(cust_id)){
-                billDetail.setCust_id(cust_id);
+            if(!customerKeys.isEmpty()){
+                System.out.println("Enter the Customer Id:");
+                int cust_id=sc.nextInt();
+                if(customerMap.containsKey(cust_id)){
+                    billDetail.setCust_id(cust_id);
+                }else{
+                    System.out.println("Invalid Customer Id....");
+                    billDetail.setCust_id(CustomerController.getInstance().addCustomer());
+                }
             }else{
-                System.out.println("Invalid Customer Id....");
                 billDetail.setCust_id(CustomerController.getInstance().addCustomer());
             }
-        }else{
-            billDetail.setCust_id(CustomerController.getInstance().addCustomer());
+            billDetail.setRep_id(PageController.getRep().getRep_id());
+            System.out.println("Enter the Discount(%)");
+            int discount=sc.nextInt();
+            float discountAmount=tot_amount*((float) discount/100);
+            tot_amount=tot_amount-discountAmount;
+            billDetail.setTot_amount(tot_amount);
+            billDetail.setDiscount(discount);
+
+            //Insert Bill into Database
+            try{
+                int bill_id= SuperMarketDAO.getInstance().insertBill(billDetail);
+                billDetail.setBill_id(bill_id);
+            }catch (SQLException e){
+                System.out.println(e);
+            }
+            ModalController.getInstance().addBillDetail(billDetail);
+
+            //Insert Bill Details into database
+            try{
+                SuperMarketDAO.getInstance().insertCustomerPurchase(billDetail,salesList);
+            }catch (SQLException e){
+                System.out.println(e);
+            }
+
+            //Update Stocks in Database
+            SuperMarketDAO.getInstance().updatestock(salesList);
+
+            //Update Representative Sales
+            RepresentativeController.getInstance().updateSales(salecount,tot_amount);
+
+            //Print the Bill
+            System.out.println("_______Super Market_______");
+            System.out.println("Bill_id:"+billDetail.getBill_id());
+            System.out.println("Customer Id:"+billDetail.getCust_id());
+            System.out.println(String.format("%30s %25s %10s %25s %10s", "Item", "|", "Qty", "|", "Price($)"));
+            for (Sales p :
+                    salesList) {
+                System.out.println(String.format("%30s %25s %10d %25s %10.2f", p.getStock_name(), "|", p.getQuantity(), "|", p.getAmount()));
+            }
+
+            System.out.println("Discount:"+(int)discount+"%");
+            System.out.println("Discount Amount:"+discountAmount);
+            System.out.println("Total Amount:"+(tot_amount-(discountAmount)));
+            System.out.println();
+
+            AddBill();
         }
-        billDetail.setRep_id(PageController.getRep().getRep_id());
-        System.out.println("Enter the Discount(%)");
-        int discount=sc.nextInt();
-        float discountAmount=tot_amount*((float) discount/100);
-        tot_amount=tot_amount-discountAmount;
-        billDetail.setTot_amount(tot_amount);
-        billDetail.setDiscount(discount);
 
-        //Insert Bill into Database
-        try{
-            int bill_id= SuperMarketDAO.getInstance().insertBill(billDetail);
-            billDetail.setBill_id(bill_id);
-        }catch (SQLException e){
-            System.out.println(e);
-        }
-        ModalController.getInstance().addBillDetail(billDetail);
 
-        //Insert Bill Details into database
-        try{
-            SuperMarketDAO.getInstance().insertCustomerPurchase(billDetail,salesList);
-        }catch (SQLException e){
-            System.out.println(e);
-        }
-
-        //Update Stocks in Database
-        SuperMarketDAO.getInstance().updatestock(salesList);
-
-        //Print the Bill
-        System.out.println("_______Super Market_______");
-        System.out.println("Bill_id:"+billDetail.getBill_id());
-        System.out.println("Customer Id:"+billDetail.getCust_id());
-        System.out.println(String.format("%30s %25s %10s %25s %10s", "Item", "|", "Qty", "|", "Price($)"));
-        for (Sales p :
-                salesList) {
-            System.out.println(String.format("%30s %25s %10d %25s %10.2f", p.getStock_name(), "|", p.getQuantity(), "|", p.getAmount()));
-        }
-
-        System.out.println("Discount:"+(int)discount+"%");
-        System.out.println("Discount Amount:"+discountAmount);
-        System.out.println("Total Amount:"+(tot_amount-(discountAmount)));
-        System.out.println();
-
-        AddBill();
     }
 
     //Print Bill Details
@@ -190,6 +198,28 @@ public class BillController {
 
     }
 
+    //View Today Bills
+    public void viewTodayBills(){
+        try{
+            SuperMarketDAO.getInstance().getTodayBills();
+        }catch (SQLException e){
+            System.out.println(e);
+        }
+
+    }
+
+    //View Particular Period Bills
+    public void particularPeriodBills(){
+        System.out.println("Enter the Starting Date(YYYY-MM-DD)");
+        LocalDate from=LocalDate.parse(sc.next());
+        System.out.println("Enter the Ending Date(YYYY-MM-DD)");
+        LocalDate to=LocalDate.parse(sc.next());
+        try {
+            SuperMarketDAO.getInstance().viewSomePeriodBill(from,to);
+        }catch (SQLException e){
+            System.out.println(e);
+        }
+    }
 
 
 }

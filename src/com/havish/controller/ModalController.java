@@ -187,6 +187,13 @@ public class ModalController {
 
     //Update Details in Map
     public void updateStocks(List<Sales> salesList){
+        if(stockMap==null){
+            try{
+                stockMap= SuperMarketDAO.getInstance().getAllStock();
+            }catch (SQLException e){
+                System.out.println(e);
+            }
+        }
         for (Sales sale :
                 salesList) {
             Stock stock=stockMap.get(sale.getProduct_id());
@@ -195,11 +202,29 @@ public class ModalController {
         }
     }
     public void updateStock(List<Purchase> purchaseList){
+        if(stockMap==null){
+            try{
+                stockMap= SuperMarketDAO.getInstance().getAllStock();
+            }catch (SQLException e){
+                System.out.println(e);
+            }
+        }
         for (Purchase purchase :
                 purchaseList) {
             Stock stock=stockMap.get(purchase.getStock_id());
             stock.setStockAvailable(stock.getStockAvailable()+purchase.getQuantity());
         }
+    }
+    public void updateSaleRep(int sales,float amount,int rep_id){
+        if(representativeMap==null){
+            try{
+                representativeMap= SuperMarketDAO.getInstance().getAllRep();
+            }catch (SQLException e){
+                System.out.println(e);
+            }
+        }
+        representativeMap.get(rep_id).setTotal_amount(representativeMap.get(rep_id).getTotal_amount()+amount);
+        representativeMap.get(rep_id).setTotal_sales(representativeMap.get(rep_id).getTotal_sales()+sales);
     }
 
 

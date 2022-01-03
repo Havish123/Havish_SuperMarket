@@ -128,5 +128,18 @@ public class RepresentativeController {
         }
     }
 
+    //Update Sales
+    public void updateSales(int saleCount,float tot_amount){
+        Representative rep=PageController.getRep();
+        ModalController.getInstance().updateSaleRep(saleCount,tot_amount,rep.getRep_id());
+        try{
+            SuperMarketDAO.getInstance().updateSalesRep(rep.getRep_id(),saleCount,tot_amount);
+        }catch (SQLException e){
+            System.out.println(e);
+        }
+
+    }
+
+
 
 }

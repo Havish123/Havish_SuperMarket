@@ -143,5 +143,14 @@ public class PurchaseController {
         }
     }
 
+    //View Today Purchase History
+    public void viewTodayPurchase(){
+        try{
+            SuperMarketDAO.getInstance().getTodayPurchase();
+        }catch (SQLException e){
+            System.out.println(e);
+        }
+    }
+
 
 }

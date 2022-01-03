@@ -107,4 +107,13 @@ public class StockController {
             System.out.println(e);
         }
     }
+
+    //View Top sales stocks
+    public void viewTopStocks(){
+        try{
+            SuperMarketDAO.getInstance().viewTopSalesStocks();
+        }catch (SQLException e){
+            System.out.println(e);
+        }
+    }
 }
