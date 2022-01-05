@@ -36,7 +36,7 @@ public class SuperMarketDAO {
     public static void instantiateStmt(){
         try{
             stmt= con.createStatement();
-        }catch (SQLException e){
+        }catch (SQLException | NullPointerException e){
             System.out.println("SQLException!"+e);
         }
     }
