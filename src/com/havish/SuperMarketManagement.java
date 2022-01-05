@@ -9,7 +9,7 @@ public class SuperMarketManagement {
         try{
             SuperMarketDAO.getInstance().createTables();
         }catch (SQLException|NullPointerException e){
-
+            System.out.println(e);
         }
 
         PageController.home();
