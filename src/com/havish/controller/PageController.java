@@ -21,6 +21,7 @@ public class PageController {
         System.out.println("\nEnter your option");
         loginOption=sc.nextInt();
     }
+
     public static void home(){
         loginPage();
         verification();
@@ -33,60 +34,76 @@ public class PageController {
     }
 
     //Verify Admin and Representative Details
-    public static void verification(){
+    public static int verification(){
         if(loginOption==1){
-            System.out.print("Enter Admin Id : ");
-            int id=sc.nextInt();
-            System.out.println("Enter Admin Passcode : ");
-            String passcode=sc.next();
-            isAdmin=Validation.verifyAdmin(id,passcode);
-            if(isAdmin){
-                System.out.println("Verification Success....");
-            }else{
-                System.out.println("Verification Failed. Incorrect ID or passcode");
-                verification();
+            System.out.println("Do you want to Exit(y/n)?");
+            char ch=sc.next().charAt(0);
+            if(ch=='y'){
+                return 0;
+            }else if(ch=='n'){
+                System.out.print("Enter Admin Id : ");
+                int id=sc.nextInt();
+                System.out.println("Enter Admin Passcode : ");
+                String passcode=sc.next();
+                isAdmin=Validation.verifyAdmin(id,passcode);
+                if(isAdmin){
+                    System.out.println("Admin Verification Success....");
+                }else{
+                    System.out.println("Verification Failed. Incorrect ID or passcode");
+                }
             }
+
         }else if(loginOption==2){
-            System.out.print("Enter Representative Id : ");
-            int id=sc.nextInt();
-            System.out.println("Enter Representative Passcode : ");
-            String passcode=sc.next();
-            isRep=Validation.verifyRepresentative(id,passcode);
-            if(isRep){
-                System.out.println("Verification Success....");
-            }else{
-                System.out.println("Verification Failed. Incorrect ID or passcode");
-                verification();
+            System.out.println("Do you want to Exit(y/n)?");
+            char ch=sc.next().charAt(0);
+            if(ch=='y'){
+                return 0;
+            }else if(ch=='n'){
+                System.out.print("Enter Representative Id : ");
+                int id=sc.nextInt();
+                System.out.println("Enter Representative Passcode : ");
+                String passcode=sc.next();
+                isRep=Validation.verifyRepresentative(id,passcode);
+                if(isRep){
+                    System.out.println("Representative Verification Success....");
+                }else{
+                    System.out.println("Verification Failed. Incorrect ID or passcode");
+                }
             }
         }else if(loginOption==3){
-            DatabaseConnection.closeCon();
             System.exit(0);
         }else{
             System.out.println("Invalid Option.. \nPlease Select Correct option......");
-            verification();
         }
+        return 0;
     }
 
     //Show Admin and Representative Options
-    public static void showOption(){
+    public static int showOption(){
         if(isAdmin){
             System.out.println("Select your option");
             System.out.println("1.Add representative");
             System.out.println("2.Modify Representative Details\n3.View Customer Details\n4.View Representative Details\n5.View Dealer Details\n6.View Bill Details\n7.View Purchase Details\n8.View Particular Details\n9.Exit");
             choice=sc.nextInt();
-        }else{
+        }else if(isRep){
             if(currentRep.getRep_type().equals("biller")){
-                BillController.getInstance().AddBill();
+                int status=BillController.getInstance().AddBill();
+                if(status==1){
+
+                }
             }else{
                 System.out.println("Select your option\n1.Product Price Update\n2.Purchase stock\n3.Add product\n4.View Products\n5.View Stock\n6.Exit");
                 choice=sc.nextInt();
             }
 
+        }else{
+            return 0;
         }
+        return 0;
     }
 
     //Do the selected option
-    public static void doOption() {
+    public static int doOption() {
         if(isAdmin){
             switch (choice){
                 case 1:
@@ -129,7 +146,7 @@ public class PageController {
                     login();
                     break;
             }
-        }else{
+        }else if(isRep){
             switch (choice){
                 case 1:
                     StockController.getInstance().updateStockPrice();
@@ -156,7 +173,10 @@ public class PageController {
                     home();
                     break;
             }
+        }else{
+            return 0;
         }
+        return 0;
     }
 
 

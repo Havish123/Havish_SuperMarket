@@ -58,6 +58,7 @@ public class RepresentativeController {
 
         try{
             int id=SuperMarketDAO.getInstance().insertRepresentative(rep);
+            System.out.println("Representative Id is: "+id);
             rep.setRep_id(id);
             ModalController.getInstance().addRepresentative(rep);
         }catch (SQLException e){

@@ -3,6 +3,7 @@ package com.havish.dao;
 import com.havish.controller.ModalController;
 import com.havish.modal.*;
 
+import javax.xml.crypto.Data;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,8 +15,8 @@ import static java.sql.Types.NULL;
 import static java.sql.Types.REAL;
 
 public class SuperMarketDAO {
-    private static SuperMarketDAO instance;
-    private static Connection con=DatabaseConnection.getConnection();
+    private static SuperMarketDAO instance=null;
+    private static Connection con=null;
     private static PreparedStatement pstmt=null;
     private static Statement stmt=null;
 
@@ -32,22 +33,62 @@ public class SuperMarketDAO {
         return instance;
     }
 
+    //get Connection from Database
+    public static void getConnection(){
+        if(con==null)
+            con= DatabaseConnection.getConnection();
+    }
+
+    //close connection
+    public static void closeconn(){
+        if(con==null)
+            DatabaseConnection.closeCon();
+    }
+
     //create Statement for execute Query
     public static void instantiateStmt(){
         try{
+            getConnection();
             stmt= con.createStatement();
         }catch (SQLException | NullPointerException e){
-            System.out.println("SQLException!"+e);
+            System.out.println("Exception!"+e);
         }
     }
 
     //create Prepare Statement for execute query
     public static void instantiatePstmt(String sql){
         try{
+            getConnection();
             pstmt=con.prepareStatement(sql);
-        }catch (SQLException e){
-            System.out.println("SQLException!"+e);
+        }catch (SQLException | NullPointerException e){
+            System.out.println("Exception!"+e);
         }
+    }
+
+    //close Statement
+    public static void closeStmt(){
+        try{
+            if(stmt!=null){
+                stmt.close();
+                closeconn();
+            }
+        }catch (SQLException e){
+            System.out.println(e);
+        }
+
+    }
+
+    //close Prepared Statement
+    public static void closePstmt(){
+        try{
+            if(pstmt!=null){
+                pstmt.close();
+                closeconn();
+            }
+        }catch (SQLException e){
+            System.out.println(e);
+        }
+
     }
 
     //Creating tables in the database
@@ -72,8 +113,7 @@ public class SuperMarketDAO {
             stmt.executeUpdate(createStockPurchaseTable);
             stmt.executeUpdate(createCustomerPurchaseTable);
         }finally {
-            if(stmt!=null)
-                stmt.close();
+            closeStmt();
         }
         return true;
     }
@@ -81,6 +121,7 @@ public class SuperMarketDAO {
     //Insert a new Customer
     public int insertCustomer(Customer c) throws  SQLException{
         try{
+            getConnection();
             String insertCustomer="INSERT INTO customer(cust_name,cust_email,cust_phone) VALUES(?,?,?);";
             String rsSql="SELECT LAST_INSERT_ID();";
             instantiatePstmt(insertCustomer);
@@ -104,6 +145,7 @@ public class SuperMarketDAO {
             if(stmt!=null){
                 stmt.close();
             }
+            closeconn();
         }
         return 0;
     }
@@ -129,11 +171,8 @@ public class SuperMarketDAO {
                 return id.getInt(1);
             }
         }finally {
-            if(pstmt!=null )
-                pstmt.close();
-            if(stmt!=null){
-                stmt.close();
-            }
+            closePstmt();
+            closeStmt();
         }
         return 0;
     }
@@ -170,11 +209,8 @@ public class SuperMarketDAO {
             }
         }
         finally {
-            if(pstmt!=null)
-                pstmt.close();
-            if(stmt!=null){
-                stmt.close();
-            }
+            closeStmt();
+            closePstmt();
         }
         return 0;
     }
@@ -201,11 +237,8 @@ public class SuperMarketDAO {
                 return id.getInt(1);
             }
         }finally {
-            if(pstmt!=null)
-                pstmt.close();
-            if(stmt!=null){
-                stmt.close();
-            }
+            closeStmt();
+            closePstmt();
         }
         return 0;
     }
@@ -232,11 +265,8 @@ public class SuperMarketDAO {
                 return id.getInt(1);
             }
         }finally {
-            if(stmt!=null)
-                stmt.close();
-            if(pstmt!=null){
-                pstmt.close();
-            }
+            closeStmt();
+            closePstmt();
         }
         return 0;
     }
@@ -260,10 +290,8 @@ public class SuperMarketDAO {
                 return id.getInt(1);
             }
         }finally {
-            if(stmt!=null)
-                stmt.close();
-            if(pstmt!=null)
-                pstmt.close();
+            closeStmt();
+            closePstmt();
         }
         return 0;
     }
@@ -274,20 +302,20 @@ public class SuperMarketDAO {
         try{
             instantiatePstmt(sql);
 
-            pstmt.setInt(1,bill.getPurchase_id());
-            pstmt.setInt(2,bill.getDealer_id());
+
             for (Purchase purchase :
                     purchaseList) {
+                pstmt.setInt(1,bill.getPurchase_id());
+                pstmt.setInt(2,bill.getDealer_id());
                 pstmt.setInt(3,purchase.getStock_id());
                 pstmt.setFloat(4,purchase.getPrice());
                 pstmt.setInt(5,purchase.getQuantity());
                 pstmt.setFloat(6,purchase.getTot_amount());
-                pstmt.executeUpdate();
+                pstmt.addBatch();
             }
-
+            pstmt.executeBatch();
         }finally {
-            if(pstmt!=null)
-                pstmt.close();
+            closePstmt();
         }
         return 0;
     }
@@ -297,20 +325,19 @@ public class SuperMarketDAO {
         String sql="INSERT INTO "+DBData.Customer_Purchase.CUSTOMER_PURCHASE_TABLE+"(cust_id,bill_id,product_id,product_name,quantity,amount) VALUES(?,?,?,?,?,?);";
         try{
             instantiatePstmt(sql);
-            pstmt.setInt(1,billDetails.getCust_id());
-            pstmt.setInt(2,billDetails.getBill_id());
             for (Sales s :
                     sales) {
+                pstmt.setInt(1,billDetails.getCust_id());
+                pstmt.setInt(2,billDetails.getBill_id());
                 pstmt.setInt(3,s.getProduct_id());
                 pstmt.setString(4,s.getStock_name());
                 pstmt.setInt(5,s.getQuantity());
                 pstmt.setFloat(6,s.getAmount());
-                pstmt.executeUpdate();
+                pstmt.addBatch();
             }
+            pstmt.executeBatch();
         }finally {
-            if(pstmt!=null){
-                pstmt.close();
-            }
+            closePstmt();
         }
 
 
@@ -329,9 +356,7 @@ public class SuperMarketDAO {
                 rep=new Representative(rs.getInt(DBData.Representative.ID),rs.getString(DBData.Representative.NAME),rs.getString(DBData.Representative.PASSCODE),rs.getString(DBData.Representative.REP_TYPE));
             }
         }finally {
-            if(stmt!=null){
-                stmt.close();
-            }
+            closeStmt();
         }
 
         return rep;
@@ -348,9 +373,10 @@ public class SuperMarketDAO {
                 pstmt.setInt(1, sale.getQuantity());
                 pstmt.setInt(2,sale.getQuantity());
                 pstmt.setInt(3,sale.getProduct_id());
-                pstmt.executeUpdate();
+                pstmt.addBatch();
             }
-            pstmt.close();
+            pstmt.executeBatch();
+            closePstmt();
         }catch (SQLException e){
             System.out.println(e);
         }
@@ -368,9 +394,10 @@ public class SuperMarketDAO {
                 pstmt.setInt(1, purchase.getQuantity());
                 pstmt.setString(2,LocalDate.now().toString());
                 pstmt.setInt(3,purchase.getStock_id());
-                pstmt.executeUpdate();
+                pstmt.addBatch();
             }
-            pstmt.close();
+            pstmt.executeBatch();
+            closePstmt();
         }catch (SQLException e){
             System.out.println(e);
         }
@@ -386,8 +413,7 @@ public class SuperMarketDAO {
             pstmt.setInt(2,stock_id);
             pstmt.executeUpdate();
         }finally {
-            if(pstmt!=null)
-                pstmt.close();
+            closePstmt();
         }
         return 0;
     }
@@ -402,9 +428,7 @@ public class SuperMarketDAO {
             pstmt.executeUpdate();
 
         }finally {
-            if(pstmt!=null){
-                pstmt.close();
-            }
+            closePstmt();
         }
         return 0;
     }
@@ -419,9 +443,7 @@ public class SuperMarketDAO {
             pstmt.executeUpdate();
 
         }finally {
-            if(pstmt!=null){
-                pstmt.close();
-            }
+            closePstmt();
         }
         return 0;
     }
@@ -436,9 +458,7 @@ public class SuperMarketDAO {
             pstmt.executeUpdate();
 
         }finally {
-            if(pstmt!=null){
-                pstmt.close();
-            }
+            closePstmt();
         }
         return 0;
     }
@@ -453,8 +473,7 @@ public class SuperMarketDAO {
             pstmt.setInt(3,rep_id);
             pstmt.executeUpdate();
         }finally {
-            if(pstmt!=null)
-                pstmt.close();
+            closePstmt();
         }
         return 0;
     }
@@ -476,8 +495,7 @@ public class SuperMarketDAO {
                 dealerMap.put(id,dealer);
             }
         }finally {
-            if(stmt!=null)
-                stmt.close();
+            closeStmt();
         }
         return dealerMap;
     }
@@ -508,9 +526,7 @@ public class SuperMarketDAO {
 
             }
         }finally {
-            if(stmt!=null){
-                stmt.close();
-            }
+            closeStmt();
         }
         return representativeMap;
     }
@@ -532,9 +548,7 @@ public class SuperMarketDAO {
                 customerMap.put(id,c);
             }
         }finally {
-            if (stmt!=null){
-                stmt.close();
-            }
+            closeStmt();
         }
         return customerMap;
     }
@@ -558,9 +572,7 @@ public class SuperMarketDAO {
                 stockMap.put(id,stock);
             }
         }finally {
-            if(stmt!=null){
-                stmt.close();
-            }
+            closeStmt();
         }
 
         return stockMap;
@@ -586,9 +598,7 @@ public class SuperMarketDAO {
                 billDetailsMap.put(id,billDetails);
             }
         }finally {
-            if(stmt!=null){
-                stmt.close();
-            }
+            closeStmt();
         }
         return billDetailsMap;
     }
@@ -610,7 +620,7 @@ public class SuperMarketDAO {
                 customer_purchase.setStock_name(rs.getString(DBData.Customer_Purchase.STOCK_NAME));
                 customer_purchases.add(customer_purchase);
             }
-            stmt.close();
+            closeStmt();
         }catch (SQLException e){
             System.out.println();
         }
@@ -639,8 +649,7 @@ public class SuperMarketDAO {
             }
 
         }finally {
-            if(stmt!=null)
-                stmt.close();
+            closeStmt();
         }
         return billMap;
     }
@@ -662,8 +671,7 @@ public class SuperMarketDAO {
             }
 
         }finally {
-            if(stmt!=null)
-                stmt.close();
+            closeStmt();
         }
     }
 
@@ -683,9 +691,7 @@ public class SuperMarketDAO {
                 }while (rs.next());
             }
         }finally {
-            if(stmt!=null){
-                stmt.close();
-            }
+            closeStmt();
         }
     }
 
@@ -707,8 +713,7 @@ public class SuperMarketDAO {
             }
 
         }finally {
-            if(pstmt!=null)
-                pstmt.close();
+            closePstmt();
         }
     }
 
@@ -730,8 +735,7 @@ public class SuperMarketDAO {
             }
 
         }finally {
-            if(pstmt!=null)
-                pstmt.close();
+            closePstmt();
         }
     }
 
@@ -750,8 +754,7 @@ public class SuperMarketDAO {
                 }while (rs.next());
             }
         }finally {
-            if(stmt!=null)
-                stmt.close();
+            closeStmt();
         }
     }
 
@@ -770,8 +773,7 @@ public class SuperMarketDAO {
                 }while (rs.next());
             }
         }finally {
-            if(stmt!=null)
-                stmt.close();
+            closeStmt();
         }
     }
 }

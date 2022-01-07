@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class DatabaseConnection {
     private static Connection con;
-    static {
+    public static Connection getConnection(){
         String url=DBData.MYSQL_URL+DBData.SCHEMA;
         try{
             Class.forName(DBData.MYSQL_DRIVER);
@@ -14,8 +14,6 @@ public class DatabaseConnection {
         }catch (SQLException | ClassNotFoundException exception){
             System.out.println("SQL Exception!"+exception);
         }
-    }
-    public static Connection getConnection(){
         return con;
     }
     public static void closeCon(){

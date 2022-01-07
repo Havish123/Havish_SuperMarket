@@ -17,7 +17,7 @@ public class Validation {
             }
         }else{
             System.out.println("Invalid Admin Id....");
-            PageController.verification();
+            return false;
         }
         return true;
     }
@@ -32,11 +32,11 @@ public class Validation {
                     return true;
                 }else{
                     System.out.println("Invalid Passcode....");
-                    PageController.verification();
+                    return false;
                 }
             }else{
                 System.out.println("Invalid Representative Id....\n");
-                PageController.verification();
+                return false;
             }
         }catch (SQLException e){
             System.out.println(e);

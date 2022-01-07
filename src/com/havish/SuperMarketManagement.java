@@ -11,7 +11,9 @@ public class SuperMarketManagement {
         }catch (SQLException|NullPointerException e){
             System.out.println(e);
         }
+        while (true){
+            PageController.home();
+        }
 
-        PageController.home();
     }
 }
