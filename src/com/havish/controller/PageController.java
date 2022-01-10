@@ -1,10 +1,7 @@
 package com.havish.controller;
 
 
-import com.havish.dao.DatabaseConnection;
 import com.havish.modal.Representative;
-
-import java.sql.DriverManager;
 import java.util.Scanner;
 
 public class PageController {
@@ -36,11 +33,11 @@ public class PageController {
     //Verify Admin and Representative Details
     public static int verification(){
         if(loginOption==1){
-            System.out.println("Do you want to Exit(y/n)?");
+            System.out.println("Do you want to Continue(y/n)?");
             char ch=sc.next().charAt(0);
-            if(ch=='y'){
+            if(ch=='n'){
                 return 0;
-            }else if(ch=='n'){
+            }else if(ch=='y'){
                 System.out.print("Enter Admin Id : ");
                 int id=sc.nextInt();
                 System.out.println("Enter Admin Passcode : ");
@@ -52,13 +49,12 @@ public class PageController {
                     System.out.println("Verification Failed. Incorrect ID or passcode");
                 }
             }
-
         }else if(loginOption==2){
-            System.out.println("Do you want to Exit(y/n)?");
+            System.out.println("Do you want to Continue(y/n)?");
             char ch=sc.next().charAt(0);
-            if(ch=='y'){
+            if(ch=='n'){
                 return 0;
-            }else if(ch=='n'){
+            }else if(ch=='y'){
                 System.out.print("Enter Representative Id : ");
                 int id=sc.nextInt();
                 System.out.println("Enter Representative Passcode : ");
@@ -83,16 +79,24 @@ public class PageController {
         if(isAdmin){
             System.out.println("Select your option");
             System.out.println("1.Add representative");
-            System.out.println("2.Modify Representative Details\n3.View Customer Details\n4.View Representative Details\n5.View Dealer Details\n6.View Bill Details\n7.View Purchase Details\n8.View Particular Details\n9.Exit");
+            System.out.println("2.Modify Representative Details\n3.View Customer Details" +
+                    "\n4.View Representative Details\n5.View Dealer Details\n6.View Bill Details" +
+                    "\n7.View Purchase Details\n8.View Particular Details\n9.Exit");
             choice=sc.nextInt();
         }else if(isRep){
             if(currentRep.getRep_type().equals("biller")){
-                int status=BillController.getInstance().AddBill();
-                if(status==1){
-
+                while(true){
+                    int status=BillController.getInstance().AddBill();
+                    if(status==1){
+                        break;
+                    }else{
+                        continue;
+                    }
                 }
+
             }else{
-                System.out.println("Select your option\n1.Product Price Update\n2.Purchase stock\n3.Add product\n4.View Products\n5.View Stock\n6.Exit");
+                System.out.println("Select your option\n1.Product Price Update\n2.Purchase stock" +
+                        "\n3.Add product\n4.View Products\n5.View Stock\n6.Exit");
                 choice=sc.nextInt();
             }
 

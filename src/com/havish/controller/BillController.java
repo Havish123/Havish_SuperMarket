@@ -31,7 +31,6 @@ public class BillController {
         Set<Integer> keys=stockMap.keySet();
         if(!keys.isEmpty()){
             System.out.println("No Stocks Available!!!\nPlease Contact Manager!!!");
-            System.out.println("Again Bill Controller");
             return 1;
            // System.exit(0);
         }else{
@@ -61,7 +60,6 @@ public class BillController {
                 if(!keys.isEmpty()){
                     if(stockMap.containsKey(product_id)){
                         Sales sales=new Sales();
-                        try{
                             sales.setProduct_id(product_id);
                             Stock stock=stockMap.get(product_id);
                             if(stock.getStockAvailable()<10){
@@ -83,26 +81,26 @@ public class BillController {
                             tot_amount=tot_amount+stock.getStockPrice()*quantity;
                             sales.setAmount(stock.getStockPrice()*quantity);
                             salesList.add(sales);
-                        }catch (Exception e){
-
-                        }
                     }else {
                         System.out.println("Invalid Product id...");
                     }
                 }else{
                     System.out.println("No Product Available In the Store");
                 }
-                System.out.println("1.Add\n2.Print Bill");
+                System.out.println("1.Add\n2.Print Bill\n3.Exit");
                 int ch=sc.nextInt();
                 if(ch==1){
                     continue;
-                }else{
+                }else if(ch==2){
                     flag=false;
+                }else if(ch==3){
+
                 }
 
             }
             if(exit){
-                PageController.home();
+                return 1;
+                //PageController.home();
             }else {
                 //Get Customer ID
                 Set<Integer> customerKeys=customerMap.keySet();

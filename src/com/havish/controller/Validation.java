@@ -12,14 +12,11 @@ public class Validation {
             if(passcode.equals("1234")){
                 return true;
             }else{
-                System.out.println("Invalid Passcode....");
-                PageController.verification();
+                return false;
             }
         }else{
-            System.out.println("Invalid Admin Id....");
             return false;
         }
-        return true;
     }
 
     //Verify Representative Details
@@ -31,11 +28,9 @@ public class Validation {
                     PageController.setRep(rep);
                     return true;
                 }else{
-                    System.out.println("Invalid Passcode....");
                     return false;
                 }
             }else{
-                System.out.println("Invalid Representative Id....\n");
                 return false;
             }
         }catch (SQLException e){
