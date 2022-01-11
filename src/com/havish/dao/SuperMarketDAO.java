@@ -36,13 +36,13 @@ public class SuperMarketDAO {
     //get Connection from Database
     public static void getConnection(){
         if(con==null)
-            con= DatabaseConnection.getConnection();
+            con= DatabaseConnection.getInstance().getConnection();
     }
 
     //close connection
     public static void closeconn(){
         if(con==null)
-            DatabaseConnection.closeCon();
+            DatabaseConnection.getInstance().closeCon();
     }
 
     //create Statement for execute Query

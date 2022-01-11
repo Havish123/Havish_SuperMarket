@@ -5,8 +5,19 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static Connection con;
-    public static Connection getConnection(){
+    private static DatabaseConnection instance=null;
+    private Connection con;
+
+    private DatabaseConnection(){
+
+    }
+    public static DatabaseConnection getInstance(){
+        if (instance==null){
+            instance=new DatabaseConnection();
+        }
+        return instance;
+    }
+    public Connection getConnection(){
         String url=DBData.MYSQL_URL+DBData.SCHEMA;
         try{
             Class.forName(DBData.MYSQL_DRIVER);
@@ -16,7 +27,7 @@ public class DatabaseConnection {
         }
         return con;
     }
-    public static void closeCon(){
+    public void closeCon(){
         try{
             con.close();
         }catch (SQLException e){

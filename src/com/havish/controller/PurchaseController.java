@@ -143,6 +143,11 @@ public class PurchaseController {
         }
     }
 
+    //View Particular purchase
+    public void particularPurchase(){
+
+    }
+
     //View Today Purchase History
     public void viewTodayPurchase(){
         try{
