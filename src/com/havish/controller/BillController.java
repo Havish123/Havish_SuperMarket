@@ -29,7 +29,7 @@ public class BillController {
         Map<Integer, Stock> stockMap=ModalController.getInstance().getStockMap();
         Map<Integer, Customer> customerMap=ModalController.getInstance().getCustomerMap();
         Set<Integer> keys=stockMap.keySet();
-        if(!keys.isEmpty()){
+        if(keys.isEmpty()){
             System.out.println("No Stocks Available!!!\nPlease Contact Manager!!!");
             return 1;
            // System.exit(0);
@@ -68,7 +68,7 @@ public class BillController {
                             while (true){
                                 System.out.println("Enter the quantity");
                                 quantity=sc.nextInt();
-                                if(quantity<stock.getStockAvailable()){
+                                if(quantity<=stock.getStockAvailable()){
                                     break;
                                 }else {
                                     System.out.println("Only "+stock.getStockAvailable()+" Stocks Left\n");
@@ -140,6 +140,8 @@ public class BillController {
                 }catch (SQLException e){
                     System.out.println(e);
                 }
+                //Insert Bill Details into Map
+                ModalController.getInstance().addCustomerPurchases(billDetail,salesList);
 
                 //Update Stocks in Database
                 SuperMarketDAO.getInstance().updatestock(salesList);

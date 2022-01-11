@@ -124,6 +124,18 @@ public class PurchaseController {
             }catch (SQLException e){
                 System.out.println(e);
             }
+            ModalController.getInstance().addStockPur(stockPurchaseBill,purchaseList);
+            System.out.println("Purchase Details");
+            System.out.println("Purchase ID: "+stockPurchaseBill.getPurchase_id());
+            System.out.println("Purchase Date: "+stockPurchaseBill.getPurchase_date());
+            System.out.println("Dealer Name: "+dealerMap.get(dealer_id).getDealer_name());
+            System.out.println();
+            System.out.println(String.format("%15s %10s %20s %10s %18s %10s %10s %10s %10s", "ID", "|", "StockName", "|", "Quantity","|","Price","|","Total Amount"));
+            for (Purchase purchase :
+                    purchaseList) {
+                System.out.println(String.format("%15d %10s %20s %10s %18d %10s %10.2f %10s %10.2f", purchase.getStock_id(), "|", stockMap.get(purchase.getStock_id()).getStockName(), "|", purchase.getQuantity(),"|",purchase.getPrice(),"|",purchase.getTot_amount()));
+            }
+            System.out.println("Total Amount: "+tot_amount);
 
         }
     }
@@ -145,6 +157,27 @@ public class PurchaseController {
 
     //View Particular purchase
     public void particularPurchase(){
+        System.out.println("Enter the Purchase ID");
+        int id=sc.nextInt();
+        if(ModalController.getInstance().getStock_purchase_billMap().containsKey(id)){
+            Stock_Purchase_Bill bill=ModalController.getInstance().getStock_purchase_billMap().get(id);
+            int dealer_id=bill.getDealer_id();
+            System.out.println();
+            System.out.println("Purchase Details");
+            System.out.println("Purchase ID: "+id);
+            System.out.println("Purchase Date: "+bill.getPurchase_date());
+            System.out.println("Dealer Name: "+ModalController.getInstance().getDealerMap().get(dealer_id).getDealer_name());
+            System.out.println();
+            System.out.println(String.format("%15s %10s %20s %10s %18s %10s %10s %10s %10s", "ID", "|", "StockName", "|", "Quantity","|","Price","|","Total Amount"));
+            for (Stock_Purchase purchase :
+                    ModalController.getInstance().getStockPurchaseMap().get(id)) {
+                System.out.println(String.format("%15d %10s %20s %10s %18d %10s %10.2f %10s %10.2f", purchase.getStock_id(), "|", ModalController.getInstance().getStockMap().get(purchase.getStock_id()).getStockName(), "|", purchase.getQuantity(),"|",purchase.getPrice(),"|",purchase.getTotal_amount()));
+            }
+            System.out.println("Total Amount :"+bill.getTotal_amount());
+            System.out.println();
+        }else{
+            System.out.println("Please Enter Correct purchase ID\nNo Purchase Bill Available for this ID");
+        }
 
     }
 

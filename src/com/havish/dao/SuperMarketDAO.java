@@ -33,19 +33,19 @@ public class SuperMarketDAO {
     }
 
     //get Connection from Database
-    public static void getConnection(){
+    public void getConnection(){
         if(con==null)
             con= DatabaseConnection.getInstance().getConnection();
     }
 
     //close connection
-    public static void closeconn(){
+    public void closeconn(){
         if(con==null)
             DatabaseConnection.getInstance().closeCon();
     }
 
     //create Statement for execute Query
-    public static void instantiateStmt(){
+    public void instantiateStmt(){
         try{
             getConnection();
             stmt= con.createStatement();
@@ -55,7 +55,7 @@ public class SuperMarketDAO {
     }
 
     //create Prepare Statement for execute query
-    public static void instantiatePstmt(String sql){
+    public void instantiatePstmt(String sql){
         try{
             getConnection();
             pstmt=con.prepareStatement(sql);
@@ -65,7 +65,7 @@ public class SuperMarketDAO {
     }
 
     //close Statement
-    public static void closeStmt(){
+    public void closeStmt(){
         try{
             if(stmt!=null){
                 stmt.close();
@@ -78,7 +78,7 @@ public class SuperMarketDAO {
     }
 
     //close Prepared Statement
-    public static void closePstmt(){
+    public void closePstmt(){
         try{
             if(pstmt!=null){
                 pstmt.close();
@@ -729,7 +729,7 @@ public class SuperMarketDAO {
             }else {
                 do{
                     System.out.println(String.format("%8s %10s %15s %10s %10s %10s %10s", "ID", "|", "Dealer ID","|", "Purchase_date", "|", "Amount"));
-                    System.out.println(String.format("%8d %10s %15d %10s %10d %10s %10.2f ", rs.getInt(DBData.Stock_Purchase_Bill.ID), "|", rs.getInt(DBData.Stock_Purchase_Bill.DEALER_ID), "|", rs.getString(DBData.Stock_Purchase_Bill.DATE), "|",rs.getString(DBData.Stock_Purchase_Bill.AMOUNT)));
+                    System.out.println(String.format("%8d %10s %15d %10s %10s %10s %10.2f ", rs.getInt(DBData.Stock_Purchase_Bill.ID), "|", rs.getInt(DBData.Stock_Purchase_Bill.DEALER_ID), "|", rs.getString(DBData.Stock_Purchase_Bill.DATE), "|",rs.getFloat(DBData.Stock_Purchase_Bill.AMOUNT)));
                 }while (rs.next());
             }
 
@@ -774,5 +774,28 @@ public class SuperMarketDAO {
         }finally {
             closeStmt();
         }
+    }
+
+    public List<Stock_Purchase> getAllPurchase(int bill_id){
+        List<Stock_Purchase> stock_purchases=new ArrayList<>();
+        String sql="SELECT * FROM "+DBData.Stock_Purchase.PURCHASE_STOCKS+" WHERE "+DBData.Stock_Purchase_Bill.ID+"="+bill_id+";";
+        try{
+            instantiateStmt();
+            ResultSet rs=stmt.executeQuery(sql);
+            while (rs.next()){
+                Stock_Purchase stock_purchase=new Stock_Purchase();
+                stock_purchase.setPurchase_id(rs.getInt(DBData.Stock_Purchase.PURCHASE_ID));
+                stock_purchase.setDealer_id(rs.getInt(DBData.Stock_Purchase.DEALER_ID));
+                stock_purchase.setStock_id(rs.getInt(DBData.Stock_Purchase.ID));
+                stock_purchase.setQuantity(rs.getInt(DBData.Stock_Purchase.QUANTITY));
+                stock_purchase.setTotal_amount(rs.getFloat(DBData.Stock_Purchase.TOTAL_AMOUNT));
+                stock_purchase.setPrice(rs.getFloat(DBData.Stock_Purchase.PRICE));
+                stock_purchases.add(stock_purchase);
+            }
+            closeStmt();
+        }catch (SQLException e){
+            System.out.println();
+        }
+        return stock_purchases;
     }
 }

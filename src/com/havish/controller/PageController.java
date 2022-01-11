@@ -188,7 +188,7 @@ public class PageController {
     public void showParticularOption(){
         System.out.println("Select Your Option\n1.View Top 5 Customers\n2.View low available Stocks" +
                 "\n3.View Particular Bill Details\n4.View Today Bills\n5.View Today Purchase" +
-                "\n6.View Top Sale Stocks\n7.View Particular Bills for some period\n8.Exit");
+                "\n6.View Top Sale Stocks\n7.View Particular Bills for some period\n8.View Particular Purchase\n9.Exit");
         int ch1=sc.nextInt();
         switch (ch1){
             case 1:
@@ -220,6 +220,10 @@ public class PageController {
                 showParticularOption();
                 break;
             case 8:
+                PurchaseController.getInstance().particularPurchase();
+                showParticularOption();
+                break;
+            case 9:
                 login();
                 break;
             default:

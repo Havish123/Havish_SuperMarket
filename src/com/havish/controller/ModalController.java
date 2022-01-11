@@ -5,10 +5,7 @@ import com.havish.dao.SuperMarketDAO;
 import com.havish.modal.*;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ModalController {
     private static ModalController instance;
@@ -19,6 +16,7 @@ public class ModalController {
     private static Map<Integer, BillDetails> billDetailsMap=null;
     private static Map<Integer, List<Customer_Purchase>> customer_purchaseMap=null;
     private static Map<Integer,Stock_Purchase_Bill> stock_purchase_billMap=null;
+    private static Map<Integer,List<Stock_Purchase>> stockPurchaseMap=null;
 
     private ModalController(){
 
@@ -97,92 +95,103 @@ public class ModalController {
     }
     public Map<Integer,List<Customer_Purchase>> getCustPurchaseMap(){
         if(customer_purchaseMap==null){
-            Map<Integer,BillDetails> billMap=getBillDetailsMap();
-            Set<Integer> keys=billMap.keySet();
+            customer_purchaseMap=new HashMap<>();
+            getBillDetailsMap();
             for (Integer key :
-                    keys) {
-                List<Customer_Purchase> customer_purchases=SuperMarketDAO.getInstance().getCustomerPurchase(key);
-                customer_purchaseMap.put(key,customer_purchases);
+                    billDetailsMap.keySet()) {
+                customer_purchaseMap.put(key,SuperMarketDAO.getInstance().getCustomerPurchase(key));
             }
         }
         return customer_purchaseMap;
+    }
+    public Map<Integer,List<Stock_Purchase>> getStockPurchaseMap(){
+        getStock_purchase_billMap();
+        if(stockPurchaseMap==null){
+            stockPurchaseMap=new HashMap<>();
+            for (Integer key :
+                    stock_purchase_billMap.keySet()) {
+                stockPurchaseMap.put(key,SuperMarketDAO.getInstance().getAllPurchase(key));
+            }
+
+        }
+        return stockPurchaseMap;
     }
 
     //Add Data into Map
     public void addStock(Stock stock){
         if(stockMap==null){
-            try{
-                stockMap=SuperMarketDAO.getInstance().getAllStock();
-            }catch (SQLException e){
-                System.out.println(e);
-            }
-            stockMap.put(stock.getStockId(),stock);
-        }else {
-            stockMap.put(stock.getStockId(),stock);
+            getStockMap();
         }
+        stockMap.put(stock.getStockId(),stock);
     }
     public void addRepresentative(Representative rep) {
         if(representativeMap==null){
-            try{
-                representativeMap=SuperMarketDAO.getInstance().getAllRep();
-            }catch (SQLException e){
-                System.out.println(e);
-            }
-            representativeMap.put(rep.getRep_id(),rep);
-        }else{
-            representativeMap.put(rep.getRep_id(),rep);
+            getRepresentativeMap();
         }
+        representativeMap.put(rep.getRep_id(),rep);
     }
     public void addBillDetail(BillDetails billDetails){
         if(billDetailsMap==null){
-            try{
-                billDetailsMap=SuperMarketDAO.getInstance().getAllBills();
-            }catch (SQLException e){
-                System.out.println(e);
-            }
-            billDetailsMap.put(billDetails.getBill_id(),billDetails);
+            getBillDetailsMap();
         }
         billDetailsMap.put(billDetails.getBill_id(),billDetails);
     }
-    public void addCustomerPurchase(int bill_id,List<Customer_Purchase> customer_purchases){
-        if(customer_purchaseMap==null){
-            customer_purchaseMap=new HashMap<>();
-            customer_purchaseMap.put(bill_id,customer_purchases);
+    public void addCustomerPurchase(int bill_id,List<Customer_Purchase> purchaseList){
+
+    }
+    public void addCustomerPurchases(BillDetails billDetails,List<Sales> salesList){
+        List<Customer_Purchase> list=new ArrayList<>();
+        for (Sales sale :
+                salesList) {
+            Customer_Purchase customer_purchase=new Customer_Purchase();
+            customer_purchase.setStock_id(sale.getProduct_id());
+            customer_purchase.setQuantity(sale.getQuantity());
+            customer_purchase.setBill_id(billDetails.getBill_id());
+            customer_purchase.setTotal_amount(sale.getAmount());
+            customer_purchase.setCust_id(billDetails.getCust_id());
+            customer_purchase.setStock_name(sale.getStock_name());
+            list.add(customer_purchase);
         }
-        customer_purchaseMap.put(bill_id,customer_purchases);
+        addCustomerPurchase(billDetails.getBill_id(),list);
+    }
+    public void addStockPurchase(int purchase_id,List<Stock_Purchase> stock_purchases){
+        if(stockPurchaseMap==null){
+            getStockPurchaseMap();
+        }
+        stockPurchaseMap.put(purchase_id,stock_purchases);
+    }
+    public void addStockPur(Stock_Purchase_Bill bill,List<Purchase> list){
+        List<Stock_Purchase> purchaseList=new ArrayList<>();
+        for (Purchase p :
+                list) {
+            Stock_Purchase purchase=new Stock_Purchase();
+            purchase.setStock_id(p.getStock_id());
+            purchase.setPrice(p.getPrice());
+            purchase.setPurchase_id(bill.getPurchase_id());
+            purchase.setDealer_id(bill.getDealer_id());
+            purchase.setTotal_amount(p.getTot_amount());
+            purchase.setQuantity(p.getQuantity());
+            purchaseList.add(purchase);
+        }
+        addStockPurchase(bill.getPurchase_id(),purchaseList);
     }
     public void addCustomer(Customer c){
         if(customerMap==null){
-            try{
-                customerMap=SuperMarketDAO.getInstance().getAllCustomer();
-                customerMap.put(c.getId(),c);
-            }catch (SQLException e){
-                System.out.println(e);
-            }
+            getCustomerMap();
         }
         customerMap.put(c.getId(),c);
     }
     public void addDealer(Dealer dealer){
         if(dealerMap==null){
-            try{
-                dealerMap=SuperMarketDAO.getInstance().getAllDealer();
-                dealerMap.put(dealer.getDealer_id(),dealer);
-            }catch (SQLException e){
-                System.out.println(e);
-            }
+            getDealerMap();
         }
         dealerMap.put(dealer.getDealer_id(),dealer);
     }
     public void addPurchaseBill(Stock_Purchase_Bill bill){
         if(stock_purchase_billMap==null){
-            try{
-                stock_purchase_billMap=SuperMarketDAO.getInstance().getAllPurchaseBill();
-                stock_purchase_billMap.put(bill.getPurchase_id(),bill);
-            }catch (SQLException e){
-                System.out.println(e);
-            }
-            stock_purchase_billMap.put(bill.getPurchase_id(),bill);
+           getStock_purchase_billMap();
         }
+        stock_purchase_billMap.put(bill.getPurchase_id(),bill);
     }
 
     //Update Details in Map
