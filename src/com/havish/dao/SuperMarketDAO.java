@@ -3,7 +3,7 @@ package com.havish.dao;
 import com.havish.controller.ModalController;
 import com.havish.modal.*;
 
-import javax.xml.crypto.Data;
+
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 import static java.sql.Types.NULL;
-import static java.sql.Types.REAL;
 
 public class SuperMarketDAO {
     private static SuperMarketDAO instance=null;
